@@ -75,6 +75,32 @@ We can find that venture is the appropiate funding type for the Spark
 top9 = pd.DataFrame(master_frame[master_frame['funding_round_type'] == 'venture'].groupby('country_code')['raised_amount_usd'].sum().sort_values(ascending = False).head(9))
 top9 = top9.reset_index()
 
+"""
+                                Check Point-4
+"""
+
+master_frame.category_list.value_counts()
+
+spark_funding_venture = pd.DataFrame(master_frame[(master_frame['funding_round_type'] == 'venture') , 
+                                                  (master_frame['country_code'].isin(['USA','GBR','IND']))
+                                                  ])
+
+spark_funding_venture = master_frame.loc[(master_frame['country_code'].isin(['USA','GBR','IND'])),:]
+spark_funding_venture = spark_funding_venture.loc[(spark_funding_venture['funding_round_type'] == 'venture'),:]
+
+#Data Check
+spark_funding_venture.country_code.value_counts()
+spark_funding_venture.funding_round_type.value_counts()
+spark_funding_venture.category_list.value_counts()
+spark_funding_venture.category_list.describe()
+spark_funding_venture['primary_sector'] = spark_funding_venture['category_list'].str.split('|').str[0].str.upper()
+
+
+mapping_category = pd.read_csv(r'E:\UPgrade\InvestmentAnalysis\mapping.csv')
+mapping_category.isnull().sum()
+mapping_category.dropna(inplace = True)
+
+sector_mapping = mapping_category.melt(id_vars="category_list",var_name="main_sector")
 
 
 
