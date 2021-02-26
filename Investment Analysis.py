@@ -144,4 +144,7 @@ TAI_ind=pd.DataFrame(D3.groupby(by='variable')['raised_amount_usd'].sum().
 
 D3[D3.variable == 'News, Search and Messaging'].groupby(['homepage_url','name'])['raised_amount_usd'].count().sort_values(ascending=False).head(3)
 
+#Graph
+
+
 
