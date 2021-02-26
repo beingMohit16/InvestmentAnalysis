@@ -81,9 +81,9 @@ top9 = top9.reset_index()
 
 master_frame.category_list.value_counts()
 
-spark_funding_venture = pd.DataFrame(master_frame[(master_frame['funding_round_type'] == 'venture') , 
-                                                  (master_frame['country_code'].isin(['USA','GBR','IND']))
-                                                  ])
+#spark_funding_venture = pd.DataFrame(master_frame[(master_frame['funding_round_type'] == 'venture') , 
+#                                                  (master_frame['country_code'].isin(['USA','GBR','IND']))
+#                                                  ])
 
 spark_funding_venture = master_frame.loc[(master_frame['country_code'].isin(['USA','GBR','IND'])),:]
 spark_funding_venture = spark_funding_venture.loc[(spark_funding_venture['funding_round_type'] == 'venture'),:]
@@ -96,16 +96,52 @@ spark_funding_venture.category_list.describe()
 spark_funding_venture['primary_sector'] = spark_funding_venture['category_list'].str.split('|').str[0].str.upper()
 
 
-mapping_category = pd.read_csv(r'E:\UPgrade\InvestmentAnalysis\mapping.csv')
-mapping_category.isnull().sum()
-mapping_category.dropna(inplace = True)
+mapping = pd.read_csv(r'E:\UPgrade\InvestmentAnalysis\mapping.csv')
+mapping.isnull().sum()
+mapping.dropna(inplace = True)
 
-sector_mapping = mapping_category.melt(id_vars="category_list",var_name="main_sector")
+#sector_mapping = mapping.melt(id_vars="category_list",var_name="main_sector")
+
+mapping = pd.melt(mapping,id_vars = "category_list")
+mapping = mapping[mapping.value != 0]
+mapping = mapping.drop('value',axis = 1)
+mapping.info()
+
+mapping['category_list'] = mapping['category_list'].str.upper()
 
 
 
+top3_eng_speaking = pd.merge(spark_funding_venture,mapping,how='left',left_on='primary_sector',right_on='category_list')
+top3_eng_speaking.drop(columns=["category_list_y"],inplace=True)
+#top3_eng_speking = top3_eng_speking[top3_eng_speking['_merge'] == 'both']
+#top3_eng_speking.main_sector.value_counts()
+#
+D1=top3_eng_speaking.loc[top3_eng_speaking['country_code']=='USA']
+D2=top3_eng_speaking.loc[top3_eng_speaking['country_code']=='GBR']
+D3=top3_eng_speaking.loc[top3_eng_speaking['country_code']=='IND']
+
+TNIC_usd=pd.DataFrame(D1.groupby(by='variable')['variable'].count().
+                     rename('Total_Investment_Count').sort_values(ascending = False)).head(3)
+
+TNIC_gbr=pd.DataFrame(D2.groupby(by='variable')['variable'].count().
+                     rename('Total_Investment_Count').sort_values(ascending = False)).head(3)
+
+TNIC_ind=pd.DataFrame(D3.groupby(by='variable')['variable'].count().
+                     rename('Total_Investment_Count').sort_values(ascending = False)).head(3)
 
 
+TAI_USD=pd.DataFrame(D1.groupby(by='variable')['raised_amount_usd'].sum().
+                     rename('Total_Investment_Amount').sort_values(ascending = False))
 
+
+TAI_gbr=pd.DataFrame(D2.groupby(by='variable')['raised_amount_usd'].sum().
+                     rename('Total_Investment_Amount').sort_values(ascending = False))
+
+
+TAI_ind=pd.DataFrame(D3.groupby(by='variable')['raised_amount_usd'].sum().
+                     rename('Total_Investment_Amount').sort_values(ascending = False))
+
+
+D3[D3.variable == 'News, Search and Messaging'].groupby(['homepage_url','name'])['raised_amount_usd'].count().sort_values(ascending=False).head(3)
 
 
